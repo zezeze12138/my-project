@@ -44,54 +44,39 @@
         menuArr: [{
           "children": [{
             "indexNum": "1",
-            "name": "申请贷款查询",
-            "parentPath": "/trading/manager",
-            "path": "/tradingManage"
-          }], "iconClass": "fafa-language", "indexNum": "2", "name": "合同订单查询", "url": "#"
-        }, {
-          "children": [{
-            "indexNum": "1",
-            "name": "待监控清单",
-            "parentPath": "/afterloan/manager",
-            "path": "/main/data"
-          }, {"indexNum": "2", "name": "风险客户清单", "parentPath": "/afterloan/manager", "path": "/risk"}, {
-            "indexNum": "3",
-            "name": "无风险客户清单",
-            "parentPath": "/afterloan/manager",
+            "name": "用户管理",
+            "parentPath": "/userManage",
             "path": "/main/user"
-          }], "iconClass": "fafa-television", "indexNum": "3", "name": "风险监控", "url": "#"
-        }, {
-          "children": [{
+          }, {
             "indexNum": "1",
             "name": "管理员管理",
             "parentPath": "",
             "path": "/customerFinance/show"
-          }, {"indexNum": "1", "name": "利率配置", "parentPath": "", "path": "/financeTask/task"}, {
-            "indexNum": "2",
-            "name": "角色管理",
-            "parentPath": "/sys",
-            "path": "/role"
-          }, {"indexNum": "3", "name": "菜单管理", "parentPath": "/sys", "path": "/menu"}],
-          "iconClass": "fafa-cog",
-          "indexNum": "6",
-          "name": "系统管理",
-          "url": "#"
+          }], "iconClass": "fafa-language", "indexNum": "2", "name": "用户管理", "url": "#"
         }, {
           "children": [{
             "indexNum": "1",
-            "name": "customerFinance",
-            "parentPath": "/zrx-platform",
-            "path": "/customerFinance/show"
+            "name": "数据统计",
+            "parentPath": "/afterloan/manager",
+            "path": "/main/data"
           }, {
             "indexNum": "2",
-            "name": "financeTask",
-            "parentPath": "/zrx-platform",
-            "path": "/financeTask/task"
-          }, {"indexNum": "3", "name": "文件上传", "parentPath": "/", "path": "file/importButton"}],
-          "iconClass": "fafa-television",
-          "indexNum": "4",
-          "name": "顾客信息",
-          "url": "#"
+            "name": "舆情预警",
+            "parentPath": "/afterloan/manager",
+            "path": "/main/data"
+          }], "iconClass": "fafa-television", "indexNum": "3", "name": "数据分析", "url": "#"
+        }, {
+          "children": [{
+            "indexNum": "1",
+            "name": "数据爬取",
+            "parentPath": "",
+            "path": "/main/data"
+          }, {
+            "indexNum": "1",
+            "name": "爬虫管理",
+            "parentPath": "",
+            "path": "/main/crawlerManagement"
+          }],"iconClass": "fafa-cog", "indexNum": "6", "name": "推送管理", "url": "#"
         }]
       }
     },methods:{

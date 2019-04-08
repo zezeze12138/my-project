@@ -5,8 +5,11 @@ import 'element-ui/lib/theme-chalk/index.css'
 import Vue from 'vue'
 import App from './App'
 import router from './router'
+import axios from 'axios'
 
 Vue.use(ElementUI)
+//axios.defaults.headers.post['Content-Type'] = "application/json; charset=utf-8\""
+Vue.prototype.$http = axios
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */

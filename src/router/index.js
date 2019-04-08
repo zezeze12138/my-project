@@ -8,6 +8,7 @@ import Data from '@/components/HomePage/Page/Data'
 import User from '@/components/HomePage/Page/User'
 import Index from '@/components/index'
 import Header from '@/components/HomePage/Main/header'
+import CrawlerManagement from '@/components/HomePage/Page/CrawlerManagement'
 
 Vue.use(Router)
 
@@ -35,7 +36,8 @@ export default new Router({
       component:Main,
       children:[
         {path:'/main/data',name:'Data',component:Data},
-        {path:'/main/user',name:'User',component:User}
+        {path:'/main/user',name:'User',component:User},
+        {path:'/main/crawlerManagement',name:'CrawlerManagement',component:CrawlerManagement}
         ]
     },{
       path:'/main1',

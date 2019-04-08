@@ -1,75 +1,219 @@
 <template>
-    <div id="createSpider">
-      <el-form ref="form" :model="form" label-width="80px">
-        <el-form-item label="名称">
-          <el-input v-model="form.name"></el-input>
-        </el-form-item>
-        <el-form-item label="起始地址">
-          <el-input v-model="form.start_urls"></el-input>
-        </el-form-item>
-        <el-form-item label="过滤域名">
-          <el-input v-model="form.allowed_domains"></el-input>
-        </el-form-item>
-        <el-form-item label="活动时间">
-          <el-col :span="11">
-            <el-date-picker type="date" placeholder="选择日期" v-model="form.date1" style="width: 100%;"></el-date-picker>
-          </el-col>
-          <el-col class="line" :span="2">-</el-col>
-          <el-col :span="11">
-            <el-time-picker placeholder="选择时间" v-model="form.date2" style="width: 100%;"></el-time-picker>
-          </el-col>
-        </el-form-item>
-        <el-form-item label="即时配送">
-          <el-switch v-model="form.delivery"></el-switch>
-        </el-form-item>
-        <el-form-item label="活动性质">
-          <el-checkbox-group v-model="form.type">
-            <el-checkbox label="美食/餐厅线上活动" name="type"></el-checkbox>
-            <el-checkbox label="地推活动" name="type"></el-checkbox>
-            <el-checkbox label="线下主题活动" name="type"></el-checkbox>
-            <el-checkbox label="单纯品牌曝光" name="type"></el-checkbox>
-          </el-checkbox-group>
-        </el-form-item>
-        <el-form-item label="特殊资源">
-          <el-radio-group v-model="form.resource">
-            <el-radio label="线上品牌商赞助"></el-radio>
-            <el-radio label="线下场地免费"></el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="活动形式">
-          <el-input type="textarea" v-model="form.desc"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="onSubmit">立即创建</el-button>
-          <el-button>取消</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
+  <div id="createSpider">
+    <el-form ref="form" :model="ScrapyForm" label-width="5%">
+      <el-form-item>
+        <el-input v-model="ScrapyForm.scrapyName" style="width: 45%;">
+          <template slot="prepend">项目名称</template>
+        </el-input>
+        <el-input v-model="ScrapyForm.spiderName" style="width: 45%; margin-left: 5%">
+          <template slot="prepend">爬虫名称</template>
+        </el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-input placeholder="http://" v-model="ScrapyForm.start_uls" style="width: 45%;">
+          <template slot="prepend">起始地址</template>
+        </el-input>
+        <el-input v-model="ScrapyForm.allowed_domains" style="width: 45%; margin-left: 5%">
+          <template slot="prepend">过滤域名</template>
+        </el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-input v-model="ScrapyForm.response_urls" style="width: 95%;">
+          <template slot="prepend">urls列表位置</template>
+        </el-input>
+      </el-form-item>
+
+      <el-form-item>
+        <el-input v-model="ScrapyForm.mangoDbUrl" style="width: 20%;">
+          <template slot="prepend">存储地址</template>
+        </el-input>
+        <el-input v-model="ScrapyForm.prot" style="width: 15%; margin-left: 5%">
+          <template slot="prepend">端口</template>
+        </el-input>
+        <el-input placeholder="名称" v-model="ScrapyForm.dbName" style="width: 25%; margin-left: 5%">
+          <template slot="prepend">数据库</template>
+        </el-input>
+        <el-input placeholder="名称" v-model="ScrapyForm.collectName" style="width: 20%; margin-left: 5%">
+          <template slot="prepend">集合</template>
+        </el-input>
+      </el-form-item>
+
+      <!--item项目获取-->
+      <el-form-item>
+        <div class="tableDate">
+          <div class="table">
+            <el-table
+              :data="ScrapyForm.spiderItemList"
+              ref="table"
+              max-height="300px"
+              tooltip-effect="dark"
+              border
+              stripe
+              style="width: 95%; overflow: auto"
+              @selection-change='selectRow'>
+              <el-table-column type="selection" width="45" align="center"></el-table-column>
+              <el-table-column label="序号" type="index" width="60" align="center"></el-table-column>
+              <el-table-column label="名称" align="center">
+                <template slot-scope="scope">
+                  <el-input v-model="scope.row.name"></el-input>
+                </template>
+              </el-table-column>
+              <el-table-column label="item">
+                <template slot-scope="scope">
+                  <el-input v-model="scope.row.item"></el-input>
+                </template>
+              </el-table-column>
+              <el-table-column label="xpath">
+                <template slot-scope="scope">
+                  <el-input v-model="scope.row.xpath"></el-input>
+                </template>
+              </el-table-column>
+              <el-table-column label="备注">
+                <template slot-scope="scope">
+                  <el-input v-model="scope.row.remark"></el-input>
+                </template>
+              </el-table-column>
+              <el-table-column label="操作">
+                <template slot-scope="scope">
+                  <el-button
+                    @click.native.prevent="deleteRow(scope.$index, ScrapyForm.spiderItemList)"
+                    type="text"
+                    size="small">
+                    移除
+                  </el-button>
+                </template>
+              </el-table-column>
+
+            </el-table>
+            <div style="border: 1px #e2e2e2 solid; width: 95%;">
+              <el-row type="flex" justify="center">
+                <el-button style="width: 30%" type="primary" plain class="el-icon-plus"
+                           @click.prevent="addRow()"></el-button>
+                <el-button style="width: 30%" type="warning" plain>导入常用配置</el-button>
+                <el-button style="width: 30%" type="danger" plain class="el-icon-minus"
+                           @click.prevent="delSelectData()"></el-button>
+
+              </el-row>
+            </div>
+
+          </div>
+        </div>
+      </el-form-item>
+
+      <el-form-item>
+        <el-row type="flex" justify="center">
+          <el-button type="primary" round @click="downScrapyXmlFile">爬虫xml文件下载</el-button>
+          <el-button type="warning" round @click="spiderData">直接爬取</el-button>
+        </el-row>
+      </el-form-item>
+    </el-form>
+  </div>
 </template>
 
 <script>
-    export default {
-        name: "data",
-        data() {
-          return {
-            form: {
-              name: '',
-              region: '',
-              date1: '',
-              date2: '',
-              delivery: false,
-              type: [],
-              resource: '',
-              desc: ''
-            }
-          }
+
+  export default {
+    name: "data",
+    data() {
+      return {
+        ScrapyForm: {
+          scrapyName: '',
+          spiderName: '',
+          start_uls: '',
+          allowed_domains: '',
+          response_urls: '',
+          mangoDbUrl:'',
+          prot:'',
+          dbName:'',
+          collectName:'',
+          spiderItemList: [],
         },
-        methods: {
-          onSubmit() {
-            console.log('submit!');
-          }
+
+        selectlistRow: []
+      }
+    },
+    methods: {
+      async onSubmit() {
+        var getData = await this.HelloAxios();
+        console.log(getData);
+      },
+      async downScrapyXmlFile() {
+        var self = this;
+        var getData = await this.HelloAxios();
+        console.log(getData.json);
+        this.$http.post('http://127.0.0.1:8081/downScrapyXml', getData.json, {responseType:'blob' }).then(function (response) {
+          console.log(response)
+          self.download(response.data)
+        });
+      },
+      download(data){
+        if (!data) {
+          return
         }
+        let url = window.URL.createObjectURL(new Blob([data]))
+        let link = document.createElement('a')
+        link.style.display = 'none'
+        link.href = url
+        link.setAttribute('download', 'data.xml')
+
+        document.body.appendChild(link)
+        link.click()
+      },
+      //爬取数据
+      async spiderData(){
+        return await this.$http.post('http://127.0.0.1:8081/spiderData', this.ScrapyForm).then(function (response) {
+          console.log(response)
+        })
+      },
+      // 获取表格选中时的数据
+      selectRow(val) {
+        this.selectlistRow = val
+      },
+      // 增加行
+      addRow() {
+        var list = {
+          name: this.name,
+          item: this.item,
+          xpath: this.xpath,
+          remark: this.remark
+        }
+        console.log(list);
+        this.ScrapyForm.spiderItemList.unshift(list)
+      },
+      // 删除方法
+      // 删除选中行
+      deleteRow(index, rows) {
+        rows.splice(index, 1);
+      },
+      delSelectData() {
+        for (let i = 0; i < this.selectlistRow.length; i++) {
+          let val = this.selectlistRow
+          console.log(this.selectlistRow)
+          // 获取选中行的索引的方法
+          // 遍历表格中tableData数据和选中的val数据，比较它们的rowNum,相等则输出选中行的索引
+          // rowNum的作用主要是为了让每一行有一个唯一的数据，方便比较，可以根据个人的开发需求从后台传入特定的数据
+          val.forEach((val, index) => {
+            this.ScrapyForm.spiderItemList.forEach((v, i) => {
+              if (val.rowNum === v.rowNum) {
+                // i 为选中的索引
+                this.ScrapyForm.spiderItemList.splice(i, 1)
+              }
+            })
+          })
+        }
+        // 删除完数据之后清除勾选框
+        this.$refs.ScrapyForm.spiderItemList.clearSelection()
+      },
+      async HelloAxios() {
+        return await this.$http.post('http://127.0.0.1:8081/createScrapyXml', this.ScrapyForm).then(function (response) {
+          return response.data
+        })
+      }
+    },
+    created: function () {
+      //this.HelloAxios();
     }
+  }
 </script>
 
 <style scoped>
