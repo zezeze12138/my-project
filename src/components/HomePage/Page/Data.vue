@@ -2,42 +2,29 @@
   <div id="createSpider">
     <el-form ref="form" :model="ScrapyForm" label-width="5%">
       <el-form-item>
-        <el-input v-model="ScrapyForm.scrapyName" style="width: 45%;">
+        <el-input v-model="ScrapyForm.projectName" style="width: 45%;">
           <template slot="prepend">项目名称</template>
         </el-input>
-        <el-input v-model="ScrapyForm.spiderName" style="width: 45%; margin-left: 5%">
+        <el-input v-model="ScrapyForm.scrapyName" style="width: 45%; margin-left: 5%">
           <template slot="prepend">爬虫名称</template>
         </el-input>
       </el-form-item>
       <el-form-item>
-        <el-input placeholder="http://" v-model="ScrapyForm.start_uls" style="width: 45%;">
-          <template slot="prepend">起始地址</template>
+        <el-input placeholder="http://" v-model="ScrapyForm.request" style="width: 45%;">
+          <template slot="prepend">请求地址</template>
         </el-input>
-        <el-input v-model="ScrapyForm.allowed_domains" style="width: 45%; margin-left: 5%">
-          <template slot="prepend">过滤域名</template>
+        <el-input v-model="ScrapyForm.page" style="width: 45%; margin-left: 5%">
+          <template slot="prepend">翻页字段</template>
         </el-input>
       </el-form-item>
       <el-form-item>
-        <el-input v-model="ScrapyForm.response_urls" style="width: 95%;">
-          <template slot="prepend">urls列表位置</template>
+        <el-input v-model="ScrapyForm.datas" style="width: 45%;">
+          <template slot="prepend">data节点名称</template>
+        </el-input>
+        <el-input v-model="ScrapyForm.url" style="width: 45%; margin-left: 5%">
+          <template slot="prepend">url节点名称</template>
         </el-input>
       </el-form-item>
-
-      <el-form-item>
-        <el-input v-model="ScrapyForm.mangoDbUrl" style="width: 20%;">
-          <template slot="prepend">存储地址</template>
-        </el-input>
-        <el-input v-model="ScrapyForm.prot" style="width: 15%; margin-left: 5%">
-          <template slot="prepend">端口</template>
-        </el-input>
-        <el-input placeholder="名称" v-model="ScrapyForm.dbName" style="width: 25%; margin-left: 5%">
-          <template slot="prepend">数据库</template>
-        </el-input>
-        <el-input placeholder="名称" v-model="ScrapyForm.collectName" style="width: 20%; margin-left: 5%">
-          <template slot="prepend">集合</template>
-        </el-input>
-      </el-form-item>
-
       <!--item项目获取-->
       <el-form-item>
         <div class="tableDate">
@@ -89,21 +76,18 @@
               <el-row type="flex" justify="center">
                 <el-button style="width: 30%" type="primary" plain class="el-icon-plus"
                            @click.prevent="addRow()"></el-button>
-                <el-button style="width: 30%" type="warning" plain>导入常用配置</el-button>
                 <el-button style="width: 30%" type="danger" plain class="el-icon-minus"
                            @click.prevent="delSelectData()"></el-button>
-
               </el-row>
             </div>
-
           </div>
         </div>
       </el-form-item>
 
       <el-form-item>
         <el-row type="flex" justify="center">
-          <el-button type="primary" round @click="downScrapyXmlFile">爬虫xml文件下载</el-button>
-          <el-button type="warning" round @click="spiderData">直接爬取</el-button>
+          <el-button type="primary" round @click="downScrapyXmlFile2">爬虫xml文件下载</el-button>
+          <el-button type="warning" round @click="downScrapypProgram">爬虫程序下载</el-button>
         </el-row>
       </el-form-item>
     </el-form>
@@ -111,21 +95,18 @@
 </template>
 
 <script>
-
+  var requestIP = "http://127.0.0.1:8081";
   export default {
     name: "data",
     data() {
       return {
         ScrapyForm: {
+          projectName: '',
           scrapyName: '',
-          spiderName: '',
-          start_uls: '',
-          allowed_domains: '',
-          response_urls: '',
-          mangoDbUrl:'',
-          prot:'',
-          dbName:'',
-          collectName:'',
+          request: '',
+          page: '',
+          datas: '',
+          url:'',
           spiderItemList: [],
         },
 
@@ -137,11 +118,11 @@
         var getData = await this.HelloAxios();
         console.log(getData);
       },
-      async downScrapyXmlFile() {
+      async downScrapyXmlFile2() {
         var self = this;
         var getData = await this.HelloAxios();
         console.log(getData.json);
-        this.$http.post('http://127.0.0.1:8081/downScrapyXml', getData.json, {responseType:'blob' }).then(function (response) {
+        this.$http.post(requestIP + '/downScrapyXmlAjax', getData.json, {responseType:'blob' }).then(function (response) {
           console.log(response)
           self.download(response.data)
         });
@@ -161,7 +142,7 @@
       },
       //爬取数据
       async spiderData(){
-        return await this.$http.post('http://127.0.0.1:8081/spiderData', this.ScrapyForm).then(function (response) {
+        return await this.$http.post(requestIP + '/spiderData', this.ScrapyForm).then(function (response) {
           console.log(response)
         })
       },
@@ -205,7 +186,7 @@
         this.$refs.ScrapyForm.spiderItemList.clearSelection()
       },
       async HelloAxios() {
-        return await this.$http.post('http://127.0.0.1:8081/createScrapyXml', this.ScrapyForm).then(function (response) {
+        return await this.$http.post(requestIP + '/createScrapyXml', this.ScrapyForm).then(function (response) {
           return response.data
         })
       }
