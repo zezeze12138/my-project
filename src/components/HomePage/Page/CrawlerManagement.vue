@@ -4,7 +4,7 @@
     <div>
       <el-row type="flex" style="margin:10px 20px 20px">
         <el-button type="primary" @click.prevent="addScrapy()">新增爬虫</el-button>
-        <el-button type="primary" @click.prevent="addRow()">设置定时任务</el-button>
+        <el-button type="primary" @click.prevent="setTiming()">设置定时任务</el-button>
         <el-button type="primary" @click.prevent="spiderAll()">爬取</el-button>
       </el-row>
     </div>
@@ -42,7 +42,7 @@
         </el-table-column>
         <el-table-column label="定时任务" prop="timing" align="center" :show-overflow-tooltip="true">
           <template scope="scope">
-            {{ scope.row.timing | timingFormat }}
+            {{ scope.row.timing }}
           </template>
         </el-table-column>
         <el-table-column label="开启分类" prop="timing" align="center" :show-overflow-tooltip="true">
@@ -121,6 +121,27 @@
       </div>
     </el-dialog>
 
+    <!--设置定时-->
+    <el-dialog :visible.sync="dialogTimingVisible" title="设置定时" @close='closeDialog'>
+
+      <div class="dialog-body">
+        <div style="margin: 0px 0px 10px 0px;">
+          <el-row type="flex" justify="center" style="margin:10px 10px 10px">
+            <el-time-select
+              v-model="timing"
+              placeholder="选择时间">
+            </el-time-select>
+          </el-row>
+        </div>
+      </div>
+
+      <div class="controllMenu">
+        <el-row type="flex" justify="center" style="margin:10px 10px 10px">
+          <el-button type="primary" size="mini" @click.prevent="setTimingButton()">提交设置</el-button>
+        </el-row>
+      </div>
+    </el-dialog>
+
     <!--查看爬虫-->
     <el-dialog :visible.sync="dialogItemListVisible" title="爬取内容" @close='closeDialog'>
 
@@ -161,8 +182,6 @@
         <el-button type="primary" @click="handleSave">确 定</el-button>
       </div>-->
     </el-dialog>
-
-
   </div>
 
 </template>
@@ -175,10 +194,13 @@
       return {
         dialogItemListVisible:false,
         dialogAddScrapyVisible:false,
+        dialogTimingVisible:false,
+        selectlistRow:[],
         ScrapyConfigList: [],
         itemList:[],
         dbName:'',
         collectName:'',
+        timing:'',
         dialogEditController:true,
         dialog:{
           projectName:'',
@@ -198,19 +220,21 @@
           {value: '11',label: '军事'},
           {value: '12',label: '新闻'},
           {value: '13',label: '探索'},
-          {value: '14',label: '财经' },
+          {value: '14',label: '财经'},
           {value: '15',label: '科技'},
-          {value: '11',label: '体育'},
-          {value: '12',label: '娱乐'},
-          {value: '13',label: '教育'},
-          {value: '14',label: '健康'},
-          {value: '15',label: '时尚'}]
+          {value: '16',label: '体育'},
+          {value: '17',label: '娱乐'},
+          {value: '18',label: '教育'},
+          {value: '19',label: '健康'},
+          {value: '20',label: '时尚'}]
       }
     },
     methods: {
       // 获取表格选中时的数据
-      selectRow(val) {
-        this.selectlistRow = val
+      selectRow:function(check) {
+        var applyIds = check.map(function(item){ return item.scrapy });
+        this.selectlistRow = applyIds;
+        console.log(this.selectlistRow);
       },
       getContext(index){
         var self = this;
@@ -227,6 +251,23 @@
         this.$http.get(requestIP+'/getItemList?scrapyName='+config.scrapy).then(function (response) {
           for(let data of response.data.data)
             self.itemList.push(data.fields);
+        });
+      },
+      //设置定时按钮
+      setTimingButton(){
+        var self = this;
+        console.log(self.selectlistRow);
+        console.log(self.timing);
+        var data = {
+          "programList":self.selectlistRow,
+          "timing":self.timing
+        }
+        this.$http.post(requestIP+'/setTimingByProgramName',data).then(function (response) {
+          console.log(response.data)
+          var result = response.data.data;
+          console.log(result);
+          self.getScrpayConfigList();
+          self.dialogTimingVisible = false;
         });
       },
       //获取配置列表
@@ -343,6 +384,9 @@
       addScrapy(){
         this.dialogAddScrapyVisible = true;
       },
+      setTiming(){
+        this.dialogTimingVisible = true;
+      },
       //文件上传方法
       submitUpload() {
         this.$refs.upload.submit();
@@ -355,12 +399,12 @@
       },
       classifyChange:function(scope){
         console.log(scope.row)
-        /*var data = {
+        var data = {
           "project":scope.row.scrapy,
           "isclassify":scope.row.isclassify
         }
         this.$http.post(requestIP+'/chargeClassifyStatus',data).then(function (response) {
-        });*/
+        });
       }
     }  ,
     filters: {
@@ -380,12 +424,6 @@
           case "2": return "primary"; break;
           case "3": return "warning"; break;
           default: return "info"; break;
-        }
-      },
-      timingFormat: function (value) {
-        switch (value){
-          case "1": return "开启定时" ; break;
-          default: return ""; break;
         }
       },
       deployFormat: function (status) {
