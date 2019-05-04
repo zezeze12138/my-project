@@ -68,9 +68,9 @@
         }, {
           "children": [{
             "indexNum": "1",
-            "name": "数据爬取",
+            "name": "爬虫编写",
             "parentPath": "",
-            "path": "/main/data"
+            "path": "/main/scrapyEdit"
           }, {
             "indexNum": "1",
             "name": "爬虫管理",

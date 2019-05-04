@@ -59,7 +59,7 @@
         </el-table-column>
         <el-table-column label="操作" width="350px">
           <template slot-scope="scope">
-            <el-button type="primary" size="mini" @click.prevent="getContext(scope.$index)">查看</el-button>
+            <el-button type="primary" size="mini" @click.prevent="getContext(scope.row)">查看</el-button>
             <el-button :type="scope.row.status | deployType" size="mini" @click.prevent="deploySpider(scope.row)">
               <!--部署/取消部署：不同的状态显示不同的名称-->
               {{ scope.row.status | deployFormat }}
@@ -67,7 +67,7 @@
             <el-button :type="scope.row.status | runType" size="mini" @click.prevent="spiderData(scope.row)">
               {{ scope.row.status | runFormat }}
             </el-button>
-            <el-button type="primary" size="mini" @click.prevent="deleteRow()">删除</el-button>
+            <el-button type="primary" size="mini" @click.prevent="deleteRow(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -106,9 +106,9 @@
               <div slot="tip" class="el-upload__tip">请将爬虫程序压缩后上传</div>
             </el-upload>
           </el-form-item>
-          <!--<el-form-item>
-            <el-button style="margin-left: 10px;" size="small" justify="center" type="success" @click="submitUpload">提交</el-button>
-          </el-form-item>-->
+         <!--<el-form-item>-->
+            <!--<el-button style="margin-left: 10px;" size="small" justify="center" type="success" @click="submitUpload">提交</el-button>-->
+          <!--</el-form-item>-->
         </el-form>
         <div class="upload-zip">
 
@@ -148,26 +148,31 @@
       <div class="dialog-body">
         <div style="margin: 0px 0px 10px 0px;">
           <el-row>
-            <el-input :disabled=dialogEditController v-model="dialog.projectName">
-              <template slot="prepend"> 项目名称</template>
+            <el-input :disabled="true" v-model="dialog.program">
+              <template slot="prepend">项目名称</template>
             </el-input>
-          </el-row>
-          <el-row>
-            <el-input :disabled=dialogEditController v-model="dialog.scrapyName">
+            <el-input :disabled="true" v-model="dialog.scrapy">
               <template slot="prepend">爬虫名称</template>
             </el-input>
           </el-row>
-        </div>
-
-        <div class="xml-body">
-          <el-input
-            type="textarea"
-            autosize
-            :disabled=dialogEditController
-            :autosize="{ minRows: 2, maxRows: 10}"
-            placeholder="请输入爬虫xml"
-            v-model="dialog.xmlTextArea">
-          </el-input>
+          <el-row>
+            <el-input :disabled="true" v-model="dialog.jobId">
+              <template slot="prepend">jobId</template>
+            </el-input>
+            <el-select :disabled=dialogEditController v-model="dialog.firstTopic" placeholder="请选择">
+              <el-option
+                v-for="item in firstTopicOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </el-row>
+          <el-row>
+            <el-input :disabled=dialogEditController v-model="dialog.timing">
+              <template slot="prepend">定时任务</template>
+            </el-input>
+          </el-row>
         </div>
       </div>
 
@@ -203,9 +208,7 @@
         timing:'',
         dialogEditController:true,
         dialog:{
-          projectName:'',
-          scrapyName:'',
-          xmlTextArea:''
+
         },
         uploadForm:{
           importFileUrl: requestIP+'/addScrapyConfigAndUploadProgram',
@@ -236,22 +239,55 @@
         this.selectlistRow = applyIds;
         console.log(this.selectlistRow);
       },
-      getContext(index){
+      getContext(row){
         var self = this;
-        var config = null;
-        //清空itemList内元素
-        self.itemList.splice(0,self.itemList.length);
-        //获取选择的scrapy项目名称
-        config = self.ScrapyConfigList[index];
-        self.dbName = config.dbName;
-        self.collectName = config.collectName;
-        //显示dialog
         self.dialogItemListVisible = true;
         //跨域异步请求获取item数据
-        this.$http.get(requestIP+'/getItemList?scrapyName='+config.scrapy).then(function (response) {
-          for(let data of response.data.data)
-            self.itemList.push(data.fields);
+        this.$http.get(requestIP+'/getItemListByProgramName?programName='+row.program).then(function (response) {
+          console.log(response.data.data[0].fields);
+          self.dialog = response.data.data[0].fields;
+          console.log(self.dialog)
         });
+      },
+      //删除爬虫
+      deleteRow(row){
+        var self = this;
+        var data = {
+          "programName":row.program,
+          "status":row.status
+        }
+        if(row.status!=0){
+          self.$message({
+            message: '爬虫需要退出部署才可以删除',
+            type: 'warning'
+          });
+        }else{
+          this.$confirm('此操作将删除该爬虫, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+            center: true
+          }).then(() => {
+            this.$http.post(requestIP+'/deleteScrapyConfig',data).then(function (response) {
+              console.log(response.data.data);
+              if(response.data.data == "true"){
+                self.getScrpayConfigList();
+                self.$message({
+                  message: '删除成功',
+                  type: 'success'
+                });
+
+              }else{
+                self.$message.error('爬虫需要退出部署才可以删除');
+              }
+            });
+          }).catch(() => {
+            self.$message({
+              type: 'info',
+              message: '已取消删除'
+            });
+          });
+        }
       },
       //设置定时按钮
       setTimingButton(){
@@ -414,12 +450,13 @@
           case "1": return "已部署"; break;
           case "2": return "运行中"; break;
           case "3": return "正在启动"; break;
+          case "4": return "分类中"; break;
           default: return ""; break;
         }
       },
       statusType: function (value) {
         switch (value){
-          case "0": return "danger"; break;
+          case "4": return "danger"; break;
           case "1": return "success"; break;
           case "2": return "primary"; break;
           case "3": return "warning"; break;
